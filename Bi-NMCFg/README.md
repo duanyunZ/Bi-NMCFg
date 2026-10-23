@@ -42,7 +42,7 @@ Each dataset must be placed under `Data/<dataset_name>/` with the following file
 3. **problemdesc.txt** (optional): One line per exercise. `Obj` for objective questions, `Sub` for subjective questions.
 
 **Prerequisite Graph** (for datasets with HCA constraints):
-- Place adjacency matrix at: `Bi_NMCFg/data/hier_matrix@<dataset>.txt`
+- Place adjacency matrix at: `Bi-NMCFg/data/hier_matrix@<dataset>.txt`
 - Format: `adj[i, j] = 1` means concept `i -> j` (i is prerequisite of j)
 
 ---
@@ -51,7 +51,7 @@ Each dataset must be placed under `Data/<dataset_name>/` with the following file
 
 ```bash
 cd /path/to/project_root
-python Bi_NMCFg/main.py
+python Bi-NMCFg/main.py
 ```
 
 Select a dataset from the prompt.
@@ -109,4 +109,3 @@ If you find this work useful, please cite our paper.
 
 
 ---
-
