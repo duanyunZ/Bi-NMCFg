@@ -1,8 +1,10 @@
-# AE-NMCFg
+# Bi-NMCFg
 
-**Toward Monotonicity and Hierarchical Rationality in Student Cognitive Modeling via Autoencoder-like Matrix Co-Factorization**
+**Bi-NMCFg: Toward Monotonicity and Hierarchical Rationality
+in Student Cognitive Modeling via Bi-Directional
+Matrix Co-Factorization**
 
-This code implements the AE-NMCFg model for student cognitive diagnosis, which jointly performs performance prediction and cognitive diagnosis under two pedagogical constraints: (1) psychometric monotonicity, and (2) the Hierarchical Cognitive Assumption (HCA).
+This code implements the Bi-NMCFg model for student cognitive diagnosis, which jointly performs performance prediction and cognitive diagnosis under two pedagogical constraints: (1) psychometric monotonicity, and (2) the Hierarchical Cognitive Assumption (HCA).
 
 ---
 
@@ -10,9 +12,9 @@ This code implements the AE-NMCFg model for student cognitive diagnosis, which j
 
 ```
 project_root/
-├── AE_NMCFg/
-│   ├── ae_nmcfg.py              # Main model class
-│   ├── ae_nmcfg_lipschitz.py    # Core optimization routines (PG-BCD + Adam)
+├── Bi-NMCFg/
+│   ├── bi_nmcfg.py              # Main model class
+│   ├── bi_nmcfg_lipschitz.py    # Core optimization routines (PG-BCD + Adam)
 │   ├── main.py                  # Training and evaluation pipeline
 │   ├── data/                    # Prerequisite graphs and saved train/test splits
 │   └── train_log.csv            # Experiment logs (auto-generated)
@@ -40,7 +42,7 @@ Each dataset must be placed under `Data/<dataset_name>/` with the following file
 3. **problemdesc.txt** (optional): One line per exercise. `Obj` for objective questions, `Sub` for subjective questions.
 
 **Prerequisite Graph** (for datasets with HCA constraints):
-- Place adjacency matrix at: `AE_NMCFg/data/hier_matrix@<dataset>.txt`
+- Place adjacency matrix at: `Bi_NMCFg/data/hier_matrix@<dataset>.txt`
 - Format: `adj[i, j] = 1` means concept `i -> j` (i is prerequisite of j)
 
 ---
@@ -49,7 +51,7 @@ Each dataset must be placed under `Data/<dataset_name>/` with the following file
 
 ```bash
 cd /path/to/project_root
-python AE_NMCFg/main.py
+python Bi_NMCFg/main.py
 ```
 
 Select a dataset from the prompt.
