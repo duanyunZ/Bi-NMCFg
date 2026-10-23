@@ -1,23 +1,26 @@
 # -*- coding: utf-8 -*-
 """
-Toward Monotonicity and Hierarchical Rationality in Student Cognitive Modeling via Autoencoder-like Matrix Co-Factorization.
+Bi-NMCFg: Toward Monotonicity and Hierarchical Rationality
+in Student Cognitive Modeling via Bi-Directional
+Matrix Co-Factorization
 
-This model jointly factorizes the student response matrix X (N x M) and the Q-matrix (N x K)
-into nonnegative latent factors E (N x T), U (T x M), and V (T x K). The knowledge proficiency
-matrix A = V^T U is reconstructed via a probit link function to enforce psychometric monotonicity.
-A Graph Attention Network (GAT) learns adaptive prerequisite strengths from the knowledge
-prerequisite graph, and a hierarchical regularizer enforces the Hierarchical Cognitive Assumption
-(HCA), i.e., mastery of prerequisite knowledge concepts bounds the mastery of descendants.
+This model jointly factorizes the student response matrix X (N x M) and the Q-matrix
+(N x K) into nonnegative latent factors E (N x T), U (T x M), and V (T x K). The
+knowledge proficiency matrix A = V^T U is reconstructed via a probit link function
+to enforce psychometric monotonicity. A Graph Attention Network (GAT) learns adaptive
+prerequisite strengths from the knowledge prerequisite graph, and a hierarchical
+regularizer enforces the Hierarchical Cognitive Assumption (HCA), i.e., mastery of
+prerequisite knowledge concepts bounds the mastery of descendants.
 
 """
 
 import warnings
-import ae_nmcfg_lipschitz
+import bi_nmcfg_lipschitz
 
 
-class ae_nmcfg():
+class bi_nmcfg():
     """
-    AE-NMCFg Model.
+    Bi-NMCFg Model.
 
     The model integrates:
         1. Matrix co-factorization: jointly factorizes X and Q into E, U, V.
@@ -55,7 +58,7 @@ class ae_nmcfg():
               early_stop_patience_no_improve=50,
               early_stop_enabled=True):
         """
-        Train the AE-NMCFg model.
+        Train the Bi-NMCFg model.
 
         The optimization follows a block coordinate descent (BCD) scheme:
             - Matrix factors (U, E, V, M) are updated via projected gradient descent
@@ -85,7 +88,7 @@ class ae_nmcfg():
         if early_stop_delta_threshold is None:
             early_stop_delta_threshold = cri
 
-        u, e, v, m, r_matrix = ae_nmcfg_lipschitz.fit_data(
+        u, e, v, m, r_matrix = bi_nmcfg_lipschitz.fit_data(
             self.train_data, self.train_fill, self.Q, self.W, self.rank,
             self.adj_matrix, self.lambda_reg, self.beta_reg,
             max_iter, cri,
