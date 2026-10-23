@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Lipschitz-based optimization for AE-NMCFg.
+Lipschitz-based optimization for Bi-NMCFg.
 """
 
 import os
@@ -93,7 +93,7 @@ def get_R_from_attention(edge_index_attn, alpha, adj, kn_num, device):
 
 
 def compute_cognitive_constraint_from_alpha(edge_index_attn, alpha, V, U, adj, device):
-    """Eq. (7): constraint = Σ(Σ r·A_parent - A_child)."""
+    """Compute the inner HCA term: Σ(Σ r·A_parent - A_child). The regularizer R_hir = -this term."""
     kn_num = V.shape[1]
     M_st = U.shape[1]
     alpha_avg = alpha if alpha.dim() == 1 else alpha.mean(dim=1)
@@ -133,7 +133,7 @@ def compute_r_weighted_sum_from_alpha(edge_index_attn, alpha, V, U, adj, device)
 
 
 def compute_gat_reconstruction_loss_torch(h0, h_gat):
-    """Eq. (8): R_gat = ||H^(2) - H^(0)||_F^2."""
+    """Graph self-reconstruction loss R_gat = ||H^(2) - H^(0)||_F^2."""
     if h_gat.shape[1] >= h0.shape[1]:
         diff = h_gat[:, :h0.shape[1]] - h0
     else:
@@ -145,7 +145,7 @@ def compute_gat_reconstruction_loss_torch(h0, h_gat):
 
 def cal_grad_U_m_torch(U, V, E, M, q_m, weight, train_data, train_fill, m,
                        lambda_reg, edge_index_attn, alpha, adj, device):
-    """Gradient w.r.t. U[:, m] (Appendix Section 6)."""
+    """Gradient w.r.t. U[:, m]."""
     rank = U.shape[0]
     grad = torch.zeros(rank, device=device, dtype=torch.float32)
 
@@ -196,7 +196,7 @@ def cal_grad_U_m_torch(U, V, E, M, q_m, weight, train_data, train_fill, m,
 
 def cal_grad_V_torch(V, U, E, M, q_m, train_data, lambda_reg,
                      edge_index_attn, alpha, adj, device):
-    """Gradient w.r.t. V (Appendix Section 6)."""
+    """Gradient w.r.t. V."""
     ex_num, st_num = train_data.shape
     rank, kn_num = V.shape
     grad = torch.zeros_like(V, device=device)
@@ -274,7 +274,7 @@ def cal_grad_M_n_torch(n, U, V, M, q_m, train_data, device):
 
 
 def cal_lipschitz_constant(train_data, q_m, weight, U, E, V, M, device):
-    """Lipschitz constants per Table I (computed once at initialization)."""
+    """Lipschitz constants."""
     ex_num, st_num = train_data.shape
     kn_num = V.shape[1]
     Lp = 1.0
@@ -410,7 +410,7 @@ def fit_data(train_data, train_fill, q_m, weight, rank, adj_matrix,
     l_u, l_e, l_v, l_m = cal_lipschitz_constant(train_data, q_m, weight, U, E, V, M, device)
     print(f"L_U=[{np.min(l_u):.2e}, {np.max(l_u):.2e}], L_E={l_e:.2e}, L_V=[{np.min(l_v):.2e}, {np.max(l_v):.2e}]")
 
-    # Initial objective (Eq. 9)
+    # Initial objective
     obj_old = (compute_likelihood_loss_torch(weight, train_fill, q_m, U, V, M, device)
                + compute_reconstruction_loss_torch(U, V, E, train_fill, weight, q_m, device)
                - lambda_reg * compute_cognitive_constraint_from_alpha(edge_index_attn, alpha, V, U, adj_matrix, device)
