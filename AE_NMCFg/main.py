@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-AE-NMCFg model training and testing.
+Bi-NMCFg model training and testing.
 """
 
 import os
@@ -18,7 +18,7 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
 
-import ae_nmcfg
+import bi_nmcfg
 from SidePackage import preprocessing as pre
 from SidePackage import auxiliary as aux
 from SidePackage import evaluation as ev
@@ -44,17 +44,17 @@ def cal_stu_ex_pre(q_m, u, v, m, st_num):
     return phi
 
 
-def gat_aenmcf_train(train_data, train_fill, q_m, adj_matrix, rank,
-                     lambda_reg, beta_reg, step_search, gbe=False, max_iter=500, cri=1e-2,
-                     early_stop_delta_threshold=None,
-                     early_stop_patience=10,
-                     early_stop_patience_no_improve=50,
-                     early_stop_enabled=True):
-    """Train AE-NMCFg on the given dataset."""
+def gat_bi_nmcfg_train(train_data, train_fill, q_m, adj_matrix, rank,
+                       lambda_reg, beta_reg, step_search, gbe=False, max_iter=500, cri=1e-2,
+                       early_stop_delta_threshold=None,
+                       early_stop_patience=10,
+                       early_stop_patience_no_improve=50,
+                       early_stop_enabled=True):
+    """Train Bi-NMCFg on the given dataset."""
     if early_stop_delta_threshold is None:
         early_stop_delta_threshold = cri
 
-    print("\nAE-NMCF hyperparameters:")
+    print("\nBi-NMCFg hyperparameters:")
     print("rank: %d, lambda: %.3f, beta: %.4f" % (rank, lambda_reg, beta_reg))
     print("max_iter: %d, convergence_threshold: %.1e" % (max_iter, cri))
     print("early_stop_delta_threshold: %.1e" % early_stop_delta_threshold)
@@ -66,7 +66,7 @@ def gat_aenmcf_train(train_data, train_fill, q_m, adj_matrix, rank,
         w = cal_weight(train_data)
 
     start = time.time()
-    model = ae_nmcfg.ae_nmcfg(train_data, train_fill, q_m, w, rank,
+    model = bi_nmcfg.bi_nmcfg(train_data, train_fill, q_m, w, rank,
                               adj_matrix, lambda_reg, beta_reg)
     u, e, v, m, r_matrix = model.train(max_iter=max_iter, cri=cri,
                                        early_stop_delta_threshold=early_stop_delta_threshold,
@@ -79,8 +79,8 @@ def gat_aenmcf_train(train_data, train_fill, q_m, adj_matrix, rank,
     return u, e, v, m, r_matrix
 
 
-def gat_aenmcf_test(stu_exe, test_loc, q_m, know_graph, u, e, v, m, prob_desc, cl, adj_matrix):
-    """Evaluate trained AE-NMCFg: ACC, RMSE, KRC, PR_0.05, PR_0.1."""
+def gat_bi_nmcfg_test(stu_exe, test_loc, q_m, know_graph, u, e, v, m, prob_desc, cl, adj_matrix):
+    """Evaluate trained Bi-NMCFg: ACC, RMSE, KRC, PR_0.05, PR_0.1."""
     ex_num, st_num = stu_exe.shape
     kn_num = q_m.shape[1]
 
@@ -119,7 +119,7 @@ def gat_aenmcf_test(stu_exe, test_loc, q_m, know_graph, u, e, v, m, prob_desc, c
 
 def load_prerequisite_matrix(dataset_name):
     """Load prerequisite graph adjacency. Returns identity matrix if not found."""
-    filepath = BASE_DIR + "/AE_NMCFg/data/hier_matrix@" + dataset_name + ".txt"
+    filepath = BASE_DIR + "/Bi-NMCFg/data/hier_matrix@" + dataset_name + ".txt"
     if os.path.exists(filepath):
         print("Loading prerequisite matrix from: %s" % filepath)
         return np.loadtxt(filepath, dtype=int)
@@ -136,7 +136,7 @@ def load_prerequisite_matrix(dataset_name):
 
 def write_train_log(dataset, rank, lambda_reg, beta_reg, acc, rmse, krc, pr, pr_1):
     """Append training results to log file."""
-    log_path = os.path.join(BASE_DIR, "AE_NMCFg", "train_log.csv")
+    log_path = os.path.join(BASE_DIR, "Bi-NMCFg", "train_log.csv")
     if not os.path.exists(log_path):
         with open(log_path, "w", encoding="utf-8") as f:
             f.write("dataset,rank,lambda,beta,ACC,RMSE,KRC,PR_0.05,PR_0.1\n")
@@ -156,10 +156,10 @@ if __name__ == '__main__':
     CRI = 1
 
     DATASET = input(
-        "\nplease choose a dataset: [FrcSub, Junyi-s, assist09, ednet, Quanlang-s, unit-bio-small, unit-his-small, unit-eng]: ")
+        "\nplease choose a dataset: [FrcSub, Junyi-s, assist09, ednet, unit-bio-small, unit-his-small, unit-eng]: ")
     print("dataset %s is choosed" % DATASET)
 
-    if DATASET not in ['FrcSub', 'Junyi-s', 'assist09', 'ednet', 'Quanlang-s', 'unit-bio-small', 'unit-his-small', 'unit-eng']:
+    if DATASET not in ['FrcSub', 'Junyi-s', 'assist09', 'ednet', 'unit-bio-small', 'unit-his-small', 'unit-eng']:
         warnings.warn("dataset does not exist.")
         exit()
 
@@ -190,35 +190,35 @@ if __name__ == '__main__':
         if is_divide == "yes":
             # Split data into train (80%) and test (20%)
             train_data, test_loc = pre.missing_stu_exe(stu_exe, MISS_R)
-            os.makedirs(BASE_DIR + "/AE_NMCFg/data/", exist_ok=True)
-            np.savetxt(BASE_DIR + "/AE_NMCFg/data/train@" + DATASET + ".txt", train_data, fmt='%.4f')
-            np.savetxt(BASE_DIR + "/AE_NMCFg/data/test@" + DATASET + ".txt", np.array(test_loc), delimiter=' ',
+            os.makedirs(BASE_DIR + "/Bi-NMCFg/data/", exist_ok=True)
+            np.savetxt(BASE_DIR + "/Bi-NMCFg/data/train@" + DATASET + ".txt", train_data, fmt='%.4f')
+            np.savetxt(BASE_DIR + "/Bi-NMCFg/data/test@" + DATASET + ".txt", np.array(test_loc), delimiter=' ',
                        fmt='%s')
             print("the data division has been completed.")
         elif is_divide == "no":
-            train_data = (np.loadtxt(BASE_DIR + "/AE_NMCFg/data/train@" + DATASET + ".txt")).astype(float)
-            test_loc = aux.read_test_loc(BASE_DIR + "/AE_NMCFg/data/test@" + DATASET + ".txt")
+            train_data = (np.loadtxt(BASE_DIR + "/Bi-NMCFg/data/train@" + DATASET + ".txt")).astype(float)
+            test_loc = aux.read_test_loc(BASE_DIR + "/Bi-NMCFg/data/test@" + DATASET + ".txt")
         else:
             warnings.warn("illegal input!")
             exit()
 
         if is_divide == "yes":
-            train_data = (np.loadtxt(BASE_DIR + "/AE_NMCFg/data/train@" + DATASET + ".txt")).astype(float)
-            test_loc = aux.read_test_loc(BASE_DIR + "/AE_NMCFg/data/test@" + DATASET + ".txt")
+            train_data = (np.loadtxt(BASE_DIR + "/Bi-NMCFg/data/train@" + DATASET + ".txt")).astype(float)
+            test_loc = aux.read_test_loc(BASE_DIR + "/Bi-NMCFg/data/test@" + DATASET + ".txt")
 
         # Fill missing values in training data
         if DATASET in ['FrcSub']:
             train_fill = pre.matrix_miss_fill_GBE(train_data)
             is_GBE = True
-        elif DATASET in ['Junyi-s', 'assist09', 'ednet', 'Quanlang-s', 'unit-bio-small', 'unit-his-small', 'unit-eng']:
+        elif DATASET in ['Junyi-s', 'assist09', 'ednet', 'unit-bio-small', 'unit-his-small', 'unit-eng']:
             train_fill = pre.matrix_miss_fill(train_data)
 
-        u, e, v, m, r_matrix = gat_aenmcf_train(
+        u, e, v, m, r_matrix = gat_bi_nmcfg_train(
             train_data, train_fill, q_m, adj_matrix, RANK,
             lambda_reg, beta_reg, step_search, gbe=is_GBE,
             max_iter=MAX_ITER, cri=CRI)
 
-        acc, rmse, krc, pr, pr_1 = gat_aenmcf_test(
+        acc, rmse, krc, pr, pr_1 = gat_bi_nmcfg_test(
             stu_exe, test_loc, q_m, kn_graph, u, e, v, m, prob_desc, CL, adj_matrix
         )
 
